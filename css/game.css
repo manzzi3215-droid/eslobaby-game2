@@ -96,6 +96,9 @@ body {
 }
 .step-num.is-done { color: #fff; background: var(--color-mint-deep); border-color: var(--color-mint-deep); }
 .step-num.is-current { color: #fff; background: var(--color-blue-deep); border-color: var(--color-blue-deep); transform: scale(1.14); }
+/* STEP 클릭 이동이 켜져 있을 때 (config.options.stepNavigationEnabled) */
+button.step-num.is-clickable { cursor: pointer; font-family: inherit; }
+button.step-num.is-clickable:active { transform: scale(0.9); }
 .progress-bar {
   width: 100%;
   height: clamp(8px, 1.3vh, 12px);
@@ -145,11 +148,13 @@ body {
   gap: clamp(10px, 1.8vh, 20px);
 }
 
-/* ----- 멘트 ---------------------------------------------------------- */
+/* ----- 멘트 ----------------------------------------------------------
+ * 카드에 큰 제목(card-title)이 따로 있으므로 멘트는 안내문 크기로.
+ * ------------------------------------------------------------------- */
 .ment {
-  font-size: var(--fs-ment);
+  font-size: clamp(17px, 2.6vw, 30px);
   font-weight: 800;
-  line-height: 1.35;
+  line-height: 1.4;
   text-align: center;
   white-space: pre-line;
   max-width: 94%;
@@ -205,6 +210,7 @@ body {
 /* =============================================================================
  * 항상 떠있는 요소 (홈 버튼 · 로고 · 하단 안내)
  * ========================================================================== */
+/* (v0.2.1까지 사용, 컨트롤 패널로 통합 — 복구 대비 보존) */
 .home-btn {
   position: fixed;
   top: clamp(10px, 2vh, 20px);
@@ -223,6 +229,42 @@ body {
   white-space: nowrap;
 }
 .home-btn:active { transform: scale(0.95); }
+
+/* 좌측 컨트롤 패널: 처음으로 / 플레이 / 정지 (터치 영역 44px 이상) */
+.control-panel {
+  position: fixed;
+  left: clamp(8px, 1.4vw, 18px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 22;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.4vh, 14px);
+}
+.ctrl-btn {
+  min-width: clamp(52px, 6vw, 66px);
+  min-height: clamp(52px, 6vw, 66px);
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--color-blue-deep);
+  background: rgba(255, 255, 255, 0.94);
+  border: 2px solid var(--ph-border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+  transition: transform var(--t-fast), background var(--t-fast), color var(--t-fast);
+}
+.ctrl-btn:active { transform: scale(0.94); }
+.ctrl-btn.is-active {
+  color: var(--color-text-invert);
+  background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-blue-deep) 100%);
+  border-color: var(--color-blue-deep);
+}
+.ctrl-ico { font-size: clamp(18px, 2.4vw, 24px); line-height: 1; }
+.ctrl-lbl { font-size: clamp(10px, 1.3vw, 13px); font-weight: 700; white-space: nowrap; }
 
 .brand-logo {
   position: fixed;
@@ -505,14 +547,78 @@ body {
   100% { transform: translateY(70vh) rotate(360deg); opacity: 0.15; }
 }
 
+/* =============================================================================
+ * 반응형: 태블릿 가로 / 모바일 / 세로 모드
+ * - 가로: 기존 카드 UI 유지
+ * - 세로: 위→아래로 흐르는 모바일 게임 UI (필요 시 스크롤 허용)
+ * ========================================================================== */
+
 /* 세로가 짧은 태블릿 가로모드 */
-@media (max-height: 640px) {
+@media (max-height: 640px) and (orientation: landscape) {
   .stage { min-height: 38vh; }
   .scene-card { margin-bottom: 24px; }
 }
-/* 좁은 화면: 상단바 좌우 여백/코너 축소 */
+
+/* 좁은 화면 공통: 상단바 좌우 여백/코너 축소 */
 @media (max-width: 560px) {
-  .top-bar { padding: 0 clamp(64px, 20vw, 92px); }
+  .top-bar { padding: 0 clamp(8px, 3vw, 20px); }
   .brand-logo { width: 74px; height: 34px; }
-  .home-btn { min-height: 40px; padding: 0 12px; }
+}
+
+/* ----- 세로(portrait) 모드: 모바일 게임형 세로 흐름 ------------------- */
+@media (orientation: portrait) {
+  /* 화면이 답답하면 세로 스크롤 허용 */
+  .screen {
+    overflow-y: auto;
+    justify-content: flex-start;
+    padding: 8px 8px 96px;                /* 하단은 컨트롤 패널 자리 */
+  }
+  .scene-card {
+    flex: none;                            /* 내용만큼 늘어나고 스크롤 */
+    width: 100%;                           /* 화면 폭 초과(가로 잘림) 방지 */
+    max-width: 560px;
+    min-height: 60vh;
+    margin-bottom: 12px;
+  }
+  .top-bar { width: 100%; padding: 0 2px; }
+  /* 11개 번호가 한 줄에 들어가도록 축소 (시연용 내비게이션) */
+  .step-numbers { gap: 3px; max-width: 100%; }
+  .step-num { width: 28px; height: 28px; font-size: 12px; }
+
+  /* 무대/캐릭터: 화면 폭 기준으로 자연스럽게 축소 (비율 유지) */
+  .stage { width: 100%; min-height: clamp(180px, 30vh, 300px); }
+  .child-body { width: clamp(150px, 44vw, 230px); height: clamp(150px, 44vw, 230px); }
+  .drag-tool { width: clamp(76px, 22vw, 108px); height: clamp(76px, 22vw, 108px); }
+  .surfactant { width: clamp(32px, 10vw, 48px); height: clamp(32px, 10vw, 48px); }
+  .gauge-wrap { width: 100%; }
+  .closeup-panel { width: min(92%, 320px); }
+  .brand-product { width: clamp(88px, 26vw, 120px); height: clamp(120px, 34vw, 170px); }
+
+  /* 너무 작아지는 요소는 세로 배치로 전환 */
+  .cards { flex-direction: column; align-items: center; gap: 10px; }
+  .product-card { width: min(78vw, 240px); flex-direction: row; gap: 12px; }
+  .product-card .card-visual { width: 84px; height: 104px; flex: none; }
+  .mission-target { flex-direction: column; text-align: center; }
+
+  /* 컨트롤 패널: 좌측 세로 → 하단 좌측 가로 배치 */
+  .control-panel {
+    top: auto;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    left: 50%;
+    transform: translateX(-50%);
+    flex-direction: row;
+    gap: 12px;
+  }
+  .ctrl-btn { min-width: 60px; min-height: 56px; }
+
+  /* 하단 안내는 컨트롤과 겹치므로 세로 모드에서 숨김 */
+  .bottom-hint { display: none !important; }
+}
+
+/* 아주 좁은 모바일(≤400px): 글자·게이지 미세 조정 */
+@media (max-width: 400px) {
+  .card-title { font-size: 20px; }
+  .ment { font-size: 17px; }
+  .gauge-bar { height: 16px; }
+  .btn-primary { min-height: 56px; padding: 0 24px; font-size: 17px; }
 }

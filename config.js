@@ -19,7 +19,7 @@
 window.ESLO_CONFIG = {
   /* --- 프로젝트 메타 --------------------------------------------------- */
   meta: {
-    version: 'v0.2.1',
+    version: 'v0.2.2',
     title: '이슬로(eslo) 베이비 미니게임',
   },
 
@@ -144,6 +144,9 @@ window.ESLO_CONFIG = {
   options: {
     tapToAdvance: true,
     dragThreshold: 1.0,
+    // 상단 STEP 번호 클릭으로 장면 이동 (테스트/팀 시연용).
+    // ★ 실제 행사 운영 전에는 false 로 바꿔 잠금 처리하세요.
+    stepNavigationEnabled: true,
   },
 
   /* --- 민감/자극 게이지 색 --------------------------------------------

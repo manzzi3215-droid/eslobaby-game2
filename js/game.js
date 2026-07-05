@@ -14,12 +14,15 @@
   var TOTAL_STEPS = SCENES.length + 1;   // 게이트(STEP 1) 포함
 
   var app;
-  var homeBtn, brandLogo, bottomHint;    // 항상 떠있는 요소들
+  var brandLogo, bottomHint;             // 항상 떠있는 요소들
+  var controlPanel, playBtn, pauseBtn;   // 좌측 컨트롤 (처음으로/플레이/정지)
   var currentScreen = null;
   var timers = [];
   var cleanups = [];
   var index = 0;
   var busy = false;
+  var paused = false;                    // 정지(⏸): 자동 진행만 멈춤 (드래그는 유지)
+  var queuedNext = false;                // 정지 중 발생한 자동 전환을 기억했다가 플레이 시 재개
 
   // 장면 간 유지되는 게임 상태 (자극 게이지 값 등)
   var state = { irritation: 0 };
@@ -78,8 +81,23 @@
     wrap.appendChild(badge);
 
     var nums = div('step-numbers');
+    var navOn = CFG.options.stepNavigationEnabled;
     for (var i = 1; i <= TOTAL_STEPS; i++) {
-      var n = div('step-num' + (i < step ? ' is-done' : (i === step ? ' is-current' : '')));
+      var cls = 'step-num' + (i < step ? ' is-done' : (i === step ? ' is-current' : ''));
+      var n;
+      if (navOn) {
+        // 클릭 가능한 버튼 (해당 장면으로 즉시 이동)
+        n = document.createElement('button');
+        n.className = cls + ' is-clickable';
+        n.addEventListener('click', (function (target) {
+          return function (e) {
+            e.stopPropagation();          // 탭-진행(tapAdvance)과 충돌 방지
+            goToStep(target);
+          };
+        })(i));
+      } else {
+        n = div(cls);
+      }
       n.textContent = i;
       nums.appendChild(n);
     }
@@ -114,6 +132,9 @@
     clearScene();
     index = 0;
     state.irritation = 0;
+    paused = false;            // 게이트 복귀 시 자동 진행 상태 초기화
+    queuedNext = false;
+    updateCtrlButtons();
     toggleChrome(false);
     showScreen(function (el) {
       shell(el, 1, CFG.texts.gate.step, function (body) {
@@ -139,12 +160,49 @@
   function startGame() { index = 0; state.irritation = 0; renderScene(); }
   function next() {
     if (busy) return;
+    if (paused) { queuedNext = true; return; }   // 정지 중: 전환을 보류
     clearScene();
     index++;
     if (index >= SCENES.length) return;
     renderScene();
   }
   function goHome() { clearScene(); renderGate(); }
+
+  // ⏸ 정지: 자동 진행(타이머 전환)만 멈춤. 드래그 인터랙션은 계속 가능.
+  function pauseGame() {
+    paused = true;
+    updateCtrlButtons();
+  }
+  // ▶ 플레이: 정지 중 보류된 전환이 있으면 이어서 진행.
+  function playGame() {
+    paused = false;
+    updateCtrlButtons();
+    if (queuedNext) { queuedNext = false; next(); }
+  }
+  function updateCtrlButtons() {
+    if (playBtn) playBtn.classList.toggle('is-active', !paused);
+    if (pauseBtn) pauseBtn.classList.toggle('is-active', paused);
+  }
+
+  // 대상 장면 시작 시점의 게이지 값을 계산 (rise 이후=100%, fall 이후=0%)
+  function irritationForIndex(target) {
+    var irr = 0;
+    for (var i = 0; i < target; i++) {
+      if (SCENES[i].gauge === 'rise') irr = 1;
+      else if (SCENES[i].gauge === 'fall') irr = 0;
+    }
+    return irr;
+  }
+
+  // STEP 번호 클릭 이동 (테스트/시연용, config.options.stepNavigationEnabled)
+  function goToStep(step) {
+    clearScene();
+    queuedNext = false;
+    if (step <= 1) { renderGate(); return; }
+    index = step - 2;
+    state.irritation = irritationForIndex(index);
+    renderScene();
+  }
 
   function renderScene() {
     clearScene();
@@ -242,7 +300,7 @@
         var mode = scene.gauge;               // 'rise' | 'hold' | 'fall'
         var gauge = null, startLevel = 0;
         if (mode) {
-          gauge = buildGauge();
+          gauge = buildGauge(mode);
           startLevel = mode === 'rise' ? 0 : clamp01(state.irritation || 1);  // hold/fall 은 현재값(100%)에서 시작
           gauge.set(startLevel);
           body.appendChild(gauge.el);
@@ -420,7 +478,8 @@
   }
 
   /* ---------- 게이지 컴포넌트 --------------------------------------- */
-  function buildGauge() {
+  // mode: 'rise' | 'hold' | 'fall' — "피부 진정 완료!"는 하강(fall) 모드에서만 표시
+  function buildGauge(mode) {
     var TG = CFG.texts.gauge;
 
     var wrap = div('gauge-wrap');
@@ -459,7 +518,8 @@
       if (ratio >= CFG.gauge.warnThreshold) {
         wrap.classList.add('is-warning'); wrap.classList.remove('is-calm');
         status.textContent = TG.warn;
-      } else if (ratio <= CFG.gauge.calmThreshold) {
+      } else if (mode === 'fall' && ratio <= CFG.gauge.calmThreshold) {
+        // "피부 진정 완료!"는 헹굼(하강) 장면에서 0% 도달했을 때만
         wrap.classList.add('is-calm'); wrap.classList.remove('is-warning');
         status.textContent = TG.calm;
       } else {
@@ -589,8 +649,34 @@
   /* ---------- 항상 떠있는 요소 토글 --------------------------------- */
   function toggleChrome(show) {
     var d = show ? '' : 'none';
-    if (homeBtn) homeBtn.style.display = d;
+    if (controlPanel) controlPanel.style.display = d;
     if (bottomHint) bottomHint.style.display = d;
+  }
+
+  /* ---------- 좌측 컨트롤 패널 (처음으로/플레이/정지) ----------------- */
+  function makeCtrlButton(icon, label, onClick) {
+    var b = document.createElement('button');
+    b.className = 'ctrl-btn';
+    var ico = div('ctrl-ico');
+    ico.textContent = icon;
+    var lbl = div('ctrl-lbl');
+    lbl.textContent = label;
+    b.appendChild(ico);
+    b.appendChild(lbl);
+    b.addEventListener('click', onClick);
+    return b;
+  }
+  function buildControlPanel() {
+    controlPanel = div('control-panel');
+    var homeB = makeCtrlButton('🏠', CFG.texts.homeButton, goHome);
+    playBtn = makeCtrlButton('▶', '플레이', playGame);
+    pauseBtn = makeCtrlButton('⏸', '정지', pauseGame);
+    controlPanel.appendChild(homeB);
+    controlPanel.appendChild(playBtn);
+    controlPanel.appendChild(pauseBtn);
+    controlPanel.style.display = 'none';
+    updateCtrlButtons();
+    app.appendChild(controlPanel);
   }
 
   /* ---------- 초기화 ------------------------------------------------- */
@@ -622,13 +708,9 @@
     brandLogo = C.createAsset({ src: CFG.assets.logo, label: CFG.placeholders.logo, shape: 'logo', className: 'brand-logo' });
     app.appendChild(brandLogo);
 
-    // 처음으로 버튼 (좌상단, 게임 중)
-    homeBtn = document.createElement('button');
-    homeBtn.className = 'home-btn';
-    homeBtn.textContent = '🏠 ' + CFG.texts.homeButton;
-    homeBtn.style.display = 'none';
-    homeBtn.addEventListener('click', goHome);
-    app.appendChild(homeBtn);
+    // 좌측 컨트롤 패널: 처음으로/플레이/정지 (게임 중 표시)
+    // (v0.2.1까지의 좌상단 "처음으로" 버튼을 이 패널로 통합)
+    buildControlPanel();
 
     // 하단 안내 (게임 중)
     bottomHint = div('bottom-hint');
@@ -639,5 +721,12 @@
     renderGate();
   }
 
-  window.Game = { init: init };
+  // 외부 제어 API (콘솔/시연용): Game.goToStep(3), Game.pause() 등
+  window.Game = {
+    init: init,
+    goToStep: goToStep,
+    goHome: goHome,
+    play: playGame,
+    pause: pauseGame,
+  };
 })();
