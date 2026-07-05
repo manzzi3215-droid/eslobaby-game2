@@ -1,0 +1,59 @@
+/* =============================================================================
+ * theme.css — 색상 / 폰트 / 간격 토큰
+ * -----------------------------------------------------------------------------
+ * 색상·폰트·둥근 정도 등 "디자인 값"은 모두 여기 :root 변수에서 수정하세요.
+ * 이 값만 바꾸면 전체 화면 톤이 한 번에 바뀝니다. (코드 수정 불필요)
+ * ========================================================================== */
+:root {
+  /* --- 브랜드 컬러 (파스텔 블루 · 화이트 · 민트) --- */
+  --color-blue:        #7fbce6;   /* 메인 파스텔 블루 */
+  --color-blue-deep:   #4a90c2;   /* 강조/버튼 */
+  --color-mint:        #b8e6d9;   /* 민트 */
+  --color-mint-deep:   #6fc9b0;
+  --color-white:       #ffffff;
+  --color-cream:       #f4fbff;   /* 아주 옅은 배경 블루 */
+
+  /* --- 텍스트 --- */
+  --color-text:        #2f4858;   /* 기본 글자 (진한 청회색) */
+  --color-text-soft:   #6b8494;   /* 보조 설명 글자 */
+  --color-text-invert: #ffffff;
+
+  /* --- 상태 색 --- */
+  --color-warn:        #ff8a8a;   /* 자극/뾰루지 표현 (붉은 톤) */
+  --color-warn-soft:   #ffd3d3;
+  --color-clean:       #8fe3c4;   /* 깨끗한 피부 반짝임 */
+
+  /* --- 배경 그라데이션 (배경 이미지가 없을 때 사용) --- */
+  --bg-gradient: linear-gradient(160deg, #eaf6ff 0%, #f4fbff 45%, #eafaf3 100%);
+
+  /* --- Placeholder 스타일 --- */
+  --ph-bg:      #ffffff;
+  --ph-border:  #bcdcef;
+  --ph-text:    #7fa5bd;
+
+  /* --- 폰트 --- */
+  --font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic',
+                 system-ui, -apple-system, sans-serif;
+
+  /* --- 글자 크기 (멀리서도 잘 보이게 큼직하게) --- */
+  --fs-ment:   clamp(24px, 4.2vw, 46px);   /* 장면 멘트 */
+  --fs-title:  clamp(22px, 3.6vw, 38px);   /* 게이트 제목 */
+  --fs-body:   clamp(16px, 2.2vw, 24px);   /* 설명 */
+  --fs-button: clamp(18px, 2.6vw, 28px);   /* 버튼 */
+  --fs-hint:   clamp(13px, 1.8vw, 20px);   /* 힌트 */
+
+  /* --- 모양 --- */
+  --radius-lg: 28px;
+  --radius-md: 20px;
+  --radius-sm: 14px;
+  --shadow-soft: 0 10px 30px rgba(74, 144, 194, 0.18);
+  --shadow-card: 0 6px 20px rgba(74, 144, 194, 0.14);
+
+  /* --- 버튼 최소 크기 (현장에서 누르기 쉽게) --- */
+  --btn-min-h: 68px;
+
+  /* --- 전환 속도 (애니메이션 튜닝) --- */
+  --t-fast:  200ms;
+  --t-base:  400ms;
+  --t-slow:  700ms;
+}

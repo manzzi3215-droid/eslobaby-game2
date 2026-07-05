@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>이슬로 베이비 미니게임</title>
+
+  <!-- 스타일 (색/폰트 값은 theme.css 에서 수정) -->
+  <link rel="stylesheet" href="css/reset.css" />
+  <link rel="stylesheet" href="css/theme.css" />
+  <link rel="stylesheet" href="css/game.css" />
+</head>
+<body>
+  <!-- 게임이 그려지는 루트 -->
+  <div id="app"></div>
+
+  <!-- 스크립트 로드 순서 중요:
+       config → components → scenes → interactions → game → main -->
+  <script src="config.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/scenes.js"></script>
+  <script src="js/interactions.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

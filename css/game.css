@@ -1,0 +1,518 @@
+/* =============================================================================
+ * game.css — 레이아웃 & 장면 스타일 (카드형 UI)
+ * (구조/모양 조정. 색·폰트 값은 theme.css 변수를 사용)
+ * ========================================================================== */
+
+body {
+  font-family: var(--font-family);
+  color: var(--color-text);
+  background: var(--bg-gradient);
+}
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* =============================================================================
+ * 전역 욕실 배경 (모든 장면 공통) — SVG 연출 또는 background.png
+ * ========================================================================== */
+.bg-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: var(--bg-gradient);
+  pointer-events: none;
+}
+.bg-layer > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.bg-layer.has-image { background-size: cover; background-position: center; }
+
+.bg-bubble {
+  position: absolute;
+  bottom: -120px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.9), rgba(200,235,250,0.4));
+  opacity: 0.5;
+  animation: floatUp linear infinite;
+  animation-duration: 10s;
+}
+.bg-layer.has-image .bg-bubble { display: none; }
+
+/* =============================================================================
+ * 화면(스크린) 공통 — 상단 STEP 진행바 + 중앙 카드
+ * ========================================================================== */
+.screen {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: clamp(10px, 2vw, 24px);
+  gap: clamp(8px, 1.4vh, 16px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--t-base) ease;
+}
+.screen.is-active { opacity: 1; visibility: visible; }
+
+/* ----- 상단 STEP 진행바 --------------------------------------------- */
+.top-bar {
+  width: min(96vw, 860px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(6px, 1vh, 10px);
+  padding: 0 clamp(84px, 13vw, 150px);   /* 좌우 코너(홈/로고) 자리 확보 */
+}
+.step-badge {
+  background: var(--color-blue-deep);
+  color: var(--color-text-invert);
+  font-weight: 800;
+  font-size: var(--fs-hint);
+  padding: 4px 18px;
+  border-radius: 999px;
+  letter-spacing: 1px;
+}
+.step-numbers { display: flex; gap: clamp(4px, 1vw, 10px); flex-wrap: wrap; justify-content: center; }
+.step-num {
+  width: clamp(26px, 3.4vw, 38px);
+  height: clamp(26px, 3.4vw, 38px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: clamp(13px, 1.8vw, 20px);
+  color: #9cc0d8;
+  background: rgba(255, 255, 255, 0.72);
+  border: 2px solid #cfe2f0;
+  transition: transform var(--t-fast);
+}
+.step-num.is-done { color: #fff; background: var(--color-mint-deep); border-color: var(--color-mint-deep); }
+.step-num.is-current { color: #fff; background: var(--color-blue-deep); border-color: var(--color-blue-deep); transform: scale(1.14); }
+.progress-bar {
+  width: 100%;
+  height: clamp(8px, 1.3vh, 12px);
+  background: #dcebf4;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.pfill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-mint-deep), var(--color-blue-deep));
+  border-radius: 999px;
+  transition: width var(--t-base) ease;
+}
+
+/* ----- 장면 카드 ----------------------------------------------------- */
+.scene-card {
+  flex: 1;
+  width: min(92vw, 720px);
+  min-height: 0;
+  margin-bottom: clamp(30px, 5vh, 54px);   /* 하단 안내 자리 */
+  background: rgba(255, 255, 255, 0.92);
+  border: 3px solid #ffffff;
+  border-radius: clamp(22px, 3.4vw, 36px);
+  box-shadow: 0 16px 44px rgba(74, 144, 194, 0.20);
+  padding: clamp(16px, 3vw, 34px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+}
+.card-title {
+  font-size: clamp(22px, 3.6vw, 40px);
+  font-weight: 800;
+  color: var(--color-text);
+  text-align: center;
+  margin-bottom: clamp(6px, 1.4vh, 14px);
+}
+.screen-body {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 1.8vh, 20px);
+}
+
+/* ----- 멘트 ---------------------------------------------------------- */
+.ment {
+  font-size: var(--fs-ment);
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: center;
+  white-space: pre-line;
+  max-width: 94%;
+  color: var(--color-blue-deep);
+  animation: fadeUp var(--t-slow) ease both;
+}
+.ment.is-strong { font-size: clamp(30px, 6vw, 58px); }
+
+/* ----- 무대(stage) --------------------------------------------------- */
+.stage {
+  position: relative;
+  width: min(84vw, 480px);
+  min-height: clamp(190px, 30vh, 320px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+
+/* ----- 힌트 ---------------------------------------------------------- */
+.hint {
+  font-size: var(--fs-hint);
+  color: var(--color-text-soft);
+  text-align: center;
+  white-space: pre-line;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* =============================================================================
+ * Asset / Placeholder
+ * ========================================================================== */
+.asset { position: relative; display: flex; align-items: center; justify-content: center; }
+.asset > img { width: 100%; height: 100%; object-fit: contain; }
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: pre-line;
+  font-weight: 700;
+  color: var(--ph-text);
+  background: var(--ph-bg);
+  border: 2px dashed var(--ph-border);
+  border-radius: var(--radius-md);
+  padding: 8px;
+  width: 100%;
+  height: 100%;
+  line-height: 1.3;
+}
+.placeholder-shape { background: transparent; border: none; padding: 0; }
+.placeholder-shape svg { width: 100%; height: 100%; display: block; }
+
+/* =============================================================================
+ * 항상 떠있는 요소 (홈 버튼 · 로고 · 하단 안내)
+ * ========================================================================== */
+.home-btn {
+  position: fixed;
+  top: clamp(10px, 2vh, 20px);
+  left: clamp(10px, 2vw, 20px);
+  z-index: 21;
+  min-height: 46px;
+  padding: 0 clamp(14px, 2.2vw, 24px);
+  font-size: var(--fs-hint);
+  font-weight: 700;
+  color: var(--color-blue-deep);
+  background: rgba(255, 255, 255, 0.94);
+  border: 2px solid var(--ph-border);
+  border-radius: 999px;
+  box-shadow: var(--shadow-card);
+  transition: transform var(--t-fast);
+  white-space: nowrap;
+}
+.home-btn:active { transform: scale(0.95); }
+
+.brand-logo {
+  position: fixed;
+  top: clamp(8px, 1.6vh, 16px);
+  right: clamp(10px, 2vw, 22px);
+  width: clamp(84px, 12vw, 124px);
+  height: clamp(34px, 5.4vh, 52px);
+  z-index: 20;
+}
+
+.bottom-hint {
+  position: fixed;
+  bottom: clamp(6px, 1.2vh, 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  font-size: var(--fs-hint);
+  color: var(--color-text-soft);
+  background: rgba(255, 255, 255, 0.82);
+  padding: 5px 16px;
+  border-radius: 999px;
+  max-width: 92vw;
+  text-align: center;
+}
+
+/* =============================================================================
+ * 게이트 (카카오 채널)
+ * ========================================================================== */
+.gate-title { font-size: var(--fs-title); font-weight: 800; text-align: center; white-space: pre-line; line-height: 1.4; }
+.gate-desc { font-size: var(--fs-body); color: var(--color-text-soft); text-align: center; white-space: pre-line; line-height: 1.5; }
+.qr-box {
+  width: clamp(160px, 28vw, 240px);
+  height: clamp(160px, 28vw, 240px);
+  box-shadow: var(--shadow-soft);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-white);
+}
+
+/* =============================================================================
+ * 큰 버튼
+ * ========================================================================== */
+.btn-primary {
+  min-height: var(--btn-min-h);
+  padding: 0 clamp(28px, 5vw, 56px);
+  font-size: var(--fs-button);
+  font-weight: 800;
+  color: var(--color-text-invert);
+  background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-blue-deep) 100%);
+  border-radius: 999px;
+  box-shadow: var(--shadow-soft);
+  transition: transform var(--t-fast);
+}
+.btn-primary:active { transform: scale(0.96); }
+
+/* =============================================================================
+ * 오늘의 미션
+ * ========================================================================== */
+.mission-badge {
+  background: var(--color-mint-deep);
+  color: var(--color-text-invert);
+  font-weight: 800;
+  font-size: var(--fs-body);
+  padding: 8px 22px;
+  border-radius: 999px;
+  box-shadow: var(--shadow-card);
+}
+.mission-goal { font-size: clamp(24px, 4.2vw, 44px); font-weight: 800; text-align: center; white-space: pre-line; color: var(--color-text); }
+.mission-target {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid var(--ph-border);
+  border-radius: var(--radius-md);
+  padding: 12px 22px;
+  box-shadow: var(--shadow-card);
+}
+.mini-germ { width: clamp(40px, 7vw, 58px); height: clamp(40px, 7vw, 58px); animation: wobble 1.6s ease-in-out infinite; }
+.mission-target-text { font-size: var(--fs-body); font-weight: 800; color: #d84a4a; }
+
+/* =============================================================================
+ * eslo는 달라요 (제품 + 키워드)
+ * ========================================================================== */
+.brand-product { width: clamp(92px, 15vw, 138px); height: clamp(124px, 22vh, 190px); }
+.keyword-list { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.keyword {
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--color-blue-deep);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px 20px;
+  border-radius: 999px;
+  box-shadow: var(--shadow-card);
+}
+
+/* =============================================================================
+ * 민감/자극 게이지
+ * ========================================================================== */
+.gauge-wrap { width: min(88%, 520px); display: flex; flex-direction: column; gap: 6px; }
+.gauge-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.gauge-label { font-size: var(--fs-hint); font-weight: 800; color: var(--color-text); }
+.gauge-right { display: flex; align-items: center; gap: 8px; }
+.gauge-percent { font-size: var(--fs-body); font-weight: 800; }
+.gauge-bar {
+  width: 100%;
+  height: clamp(16px, 2.4vh, 24px);
+  background: var(--color-white);
+  border: 2px solid var(--ph-border);
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+.gauge-fill { height: 100%; width: 0%; border-radius: 999px; transition: width 140ms linear, background 200ms linear; }
+.gauge-status { min-height: 1.25em; font-size: var(--fs-hint); font-weight: 800; text-align: center; }
+
+.warning-light {
+  width: clamp(30px, 5vw, 42px);
+  height: clamp(30px, 5vw, 42px);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity var(--t-fast), transform var(--t-fast);
+}
+.gauge-wrap.is-warning .warning-light { opacity: 1; transform: scale(1); animation: warnFlash 0.5s ease-in-out infinite; }
+.gauge-wrap.is-warning .gauge-label,
+.gauge-wrap.is-warning .gauge-status { color: var(--color-warn); }
+.gauge-wrap.is-warning .gauge-bar { border-color: var(--color-warn); animation: shakeX 0.35s ease-in-out infinite; }
+.gauge-wrap.is-calm .gauge-status { color: var(--color-mint-deep); }
+
+/* =============================================================================
+ * 드래그 장면 요소
+ * ========================================================================== */
+.child-body { position: relative; width: clamp(160px, 28vw, 240px); height: clamp(160px, 28vw, 240px); }
+.foam-layer { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.foam-bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff, #dff2ff 70%, #cfe8f7);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  transform: translate(-50%, -50%);
+}
+.drag-tool {
+  position: absolute;
+  z-index: 4;
+  width: clamp(82px, 14vw, 118px);
+  height: clamp(82px, 14vw, 118px);
+  touch-action: none;
+  cursor: grab;
+  filter: drop-shadow(0 6px 12px rgba(74,144,194,0.28));
+  transition: transform var(--t-fast);
+}
+.drag-tool:active { cursor: grabbing; transform: scale(1.06); }
+
+.rub-meter {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--ph-border);
+  overflow: hidden;
+  z-index: 5;
+}
+.rub-meter .fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--color-mint), var(--color-mint-deep)); transition: width 120ms linear; }
+
+/* 계면이 캐릭터 (헹구면 아래로 씻겨나감) */
+.surfactant {
+  position: absolute;
+  width: clamp(34px, 7vw, 54px);
+  height: clamp(34px, 7vw, 54px);
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  transition: transform 0.5s ease, opacity 0.5s ease, filter 0.3s ease;
+}
+.surfactant.is-washed { transform: translate(-50%, 260%) rotate(24deg); opacity: 0; }
+
+.child-body.is-distress { animation: wobble 1.4s ease-in-out infinite; }
+
+/* =============================================================================
+ * 피부 클로즈업
+ * ========================================================================== */
+.closeup-panel {
+  position: relative;
+  width: min(78%, 340px);
+  height: clamp(190px, 32vh, 320px);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  background: #ffe8dd;
+}
+.closeup-panel.is-irritated { background: radial-gradient(circle at 42% 40%, #ffd9cf, #ffc7b7); }
+.irritation {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, var(--color-warn), #e85c5c);
+  transform: translate(-50%, -50%);
+  animation: popIn var(--t-base) ease both;
+  z-index: 2;
+}
+
+/* =============================================================================
+ * 반짝임 / 미션 성공
+ * ========================================================================== */
+.sparkle {
+  position: absolute;
+  font-size: 26px;
+  color: var(--color-clean);
+  transform: translate(-50%, -50%);
+  animation: twinkle 1.6s ease-in-out infinite;
+  z-index: 3;
+}
+.success-title { font-size: clamp(30px, 6.5vw, 60px); font-weight: 800; text-align: center; color: var(--color-blue-deep); animation: fadeUp var(--t-slow) ease both; }
+.success-desc { font-size: var(--fs-ment); font-weight: 800; text-align: center; white-space: pre-line; color: var(--color-mint-deep); }
+.confetti-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.confetti {
+  position: absolute;
+  top: -24px;
+  width: 10px;
+  height: 15px;
+  border-radius: 2px;
+  animation-name: confettiFall;
+  animation-timing-function: ease-in;
+  animation-iteration-count: infinite;
+}
+
+/* =============================================================================
+ * 엔딩
+ * ========================================================================== */
+.ending-logo { width: clamp(120px, 22vw, 190px); height: clamp(56px, 9vw, 88px); }
+.cards { display: flex; gap: clamp(10px, 2.2vw, 24px); flex-wrap: wrap; justify-content: center; }
+.product-card {
+  width: clamp(110px, 19vw, 168px);
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.product-card .card-visual { width: 100%; height: clamp(110px, 16vh, 160px); }
+.product-card .card-name { font-size: var(--fs-hint); font-weight: 700; text-align: center; white-space: pre-line; color: var(--color-text); }
+.ending-sub { font-size: var(--fs-body); color: var(--color-text-soft); white-space: pre-line; text-align: center; line-height: 1.5; }
+
+/* =============================================================================
+ * (미사용이지만 보존) 돋보기/피부원 — 이전 흐름 복구 대비
+ * ========================================================================== */
+.inspect-wrap { position: relative; width: clamp(200px, 42vw, 320px); height: clamp(200px, 42vw, 320px); }
+.magnifier { position: absolute; inset: 0; z-index: 3; }
+.skin-circle { position: absolute; inset: 12%; border-radius: 50%; overflow: hidden; background: #ffe8dd; }
+
+/* =============================================================================
+ * 애니메이션
+ * ========================================================================== */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+@keyframes popIn { from { opacity: 0; transform: translate(-50%, -50%) scale(0); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+@keyframes twinkle {
+  0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.8); }
+  50%      { opacity: 1;   transform: translate(-50%, -50%) scale(1.2); }
+}
+@keyframes warnFlash {
+  0%, 100% { opacity: 1;   filter: brightness(1); }
+  50%      { opacity: 0.35; filter: brightness(1.4); }
+}
+@keyframes shakeX {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-4px); }
+  75%      { transform: translateX(4px); }
+}
+@keyframes wobble { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes floatUp { from { transform: translateY(0); } to { transform: translateY(-116vh); } }
+@keyframes confettiFall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(70vh) rotate(360deg); opacity: 0.15; }
+}
+
+/* 세로가 짧은 태블릿 가로모드 */
+@media (max-height: 640px) {
+  .stage { min-height: 38vh; }
+  .scene-card { margin-bottom: 24px; }
+}
+/* 좁은 화면: 상단바 좌우 여백/코너 축소 */
+@media (max-width: 560px) {
+  .top-bar { padding: 0 clamp(64px, 20vw, 92px); }
+  .brand-logo { width: 74px; height: 34px; }
+  .home-btn { min-height: 40px; padding: 0 12px; }
+}
