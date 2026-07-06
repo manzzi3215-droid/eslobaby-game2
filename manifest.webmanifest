@@ -1,0 +1,20 @@
+{
+  "name": "이슬로 베이비 미니게임",
+  "short_name": "이슬로게임",
+  "description": "이슬로 베이비페어 현장 고객 참여용 미니게임",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#eaf6ff",
+  "theme_color": "#7fbce6",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "assets/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

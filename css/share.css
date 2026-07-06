@@ -1,0 +1,125 @@
+/* =============================================================================
+ * share.css — 공유용 QR 페이지 스타일 (share.html 전용)
+ * 색/폰트 토큰은 theme.css 의 :root 변수를 그대로 사용합니다.
+ * ========================================================================== */
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: var(--font-family);
+  color: var(--color-text);
+  background: var(--bg-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 4vw, 40px);
+  box-sizing: border-box;
+}
+
+.share-card {
+  width: min(92vw, 460px);
+  background: rgba(255, 255, 255, 0.94);
+  border: 3px solid #ffffff;
+  border-radius: clamp(22px, 4vw, 34px);
+  box-shadow: var(--shadow-soft);
+  padding: clamp(22px, 5vw, 40px) clamp(18px, 5vw, 36px);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(12px, 2.4vh, 20px);
+}
+
+.share-logo {
+  font-size: clamp(26px, 6vw, 34px);
+  font-weight: 800;
+  color: var(--color-blue-deep);
+  letter-spacing: 1px;
+}
+.share-logo small {
+  display: block;
+  font-size: clamp(12px, 2.6vw, 15px);
+  font-weight: 700;
+  color: var(--color-blue);
+  letter-spacing: 3px;
+  margin-top: 2px;
+}
+
+.share-title {
+  font-size: clamp(20px, 4.4vw, 28px);
+  font-weight: 800;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.share-desc {
+  font-size: var(--fs-body);
+  color: var(--color-text-soft);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* QR 영역 */
+.qr-area {
+  width: clamp(200px, 62vw, 280px);
+  height: clamp(200px, 62vw, 280px);
+  background: #ffffff;
+  border: 2px solid var(--ph-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: clamp(10px, 3vw, 16px);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.qr-area svg,
+.qr-area .qr-img { width: 100%; height: 100%; display: block; object-fit: contain; }
+.qr-placeholder {
+  white-space: pre-line;
+  font-weight: 700;
+  color: var(--ph-text);
+  font-size: var(--fs-hint);
+  line-height: 1.4;
+}
+
+/* URL 표시 박스 */
+.url-box {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: clamp(12px, 3vw, 15px);
+  font-weight: 700;
+  color: var(--color-blue-deep);
+  background: var(--color-cream);
+  border: 1px dashed var(--ph-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  word-break: break-all;
+}
+
+/* 게임 바로가기 버튼 */
+.go-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--btn-min-h);
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 clamp(24px, 5vw, 44px);
+  font-size: var(--fs-button);
+  font-weight: 800;
+  color: var(--color-text-invert);
+  text-decoration: none;
+  background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-blue-deep) 100%);
+  border-radius: 999px;
+  box-shadow: var(--shadow-soft);
+  transition: transform var(--t-fast);
+}
+.go-btn:active { transform: scale(0.96); }
+
+.share-foot {
+  font-size: var(--fs-hint);
+  color: var(--color-text-soft);
+  line-height: 1.5;
+}

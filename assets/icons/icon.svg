@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="eslo 이슬로 베이비">
+  <!-- PWA placeholder 아이콘 (실제 로고 준비되면 PNG 192/512 로 교체 가능) -->
+  <rect width="512" height="512" rx="112" fill="#7fbce6"/>
+  <rect x="56" y="56" width="400" height="400" rx="84" fill="#eaf6ff"/>
+  <circle cx="256" cy="212" r="120" fill="#ffffff"/>
+  <circle cx="216" cy="200" r="12" fill="#2f4858"/>
+  <circle cx="296" cy="200" r="12" fill="#2f4858"/>
+  <path d="M220 244 q36 34 72 0" stroke="#4a90c2" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <text x="256" y="416" text-anchor="middle" font-family="sans-serif" font-size="96" font-weight="800" fill="#4a90c2">eslo</text>
+</svg>

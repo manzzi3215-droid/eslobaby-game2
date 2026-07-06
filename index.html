@@ -6,6 +6,17 @@
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>이슬로 베이비 미니게임</title>
 
+  <!-- PWA: 홈 화면 추가 / 앱처럼 실행 (상대경로 → GitHub Pages 하위경로 OK) -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#7fbce6" />
+  <link rel="icon" type="image/svg+xml" href="assets/icons/icon.svg" />
+  <!-- iOS 홈 화면 추가 대응 -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="이슬로게임" />
+  <link rel="apple-touch-icon" href="assets/icons/icon.svg" />
+
   <!-- 스타일 (색/폰트 값은 theme.css 에서 수정) -->
   <link rel="stylesheet" href="css/reset.css" />
   <link rel="stylesheet" href="css/theme.css" />
@@ -23,5 +34,14 @@
   <script src="js/interactions.js"></script>
   <script src="js/game.js"></script>
   <script src="js/main.js"></script>
+
+  <!-- PWA 서비스워커 등록 (오프라인 캐싱 — file:// 직접 실행 시엔 조용히 무시) -->
+  <script>
+    if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function () {});
+      });
+    }
+  </script>
 </body>
 </html>
