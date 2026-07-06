@@ -16,7 +16,6 @@
   var app;
   var brandLogo, bottomHint;                     // 항상 떠있는 요소들
   var controlPanel, playBtn, pauseBtn, nextBtn;  // 좌측 컨트롤 (처음으로/플레이/정지/다음)
-  var pageIndicator;                             // 하단 페이지 인디케이터 (진행 표시)
   var currentScreen = null;
   var timers = [];
   var cleanups = [];
@@ -68,7 +67,9 @@
     busy = true;
     setTimeout(function () { busy = false; }, 460);
     if (prev) {
+      // v0.2.8: 다음 장면은 오른쪽에서 들어오고, 이전 장면은 왼쪽으로 밀려나며 사라짐
       prev.classList.remove('is-active');
+      prev.classList.add('is-leaving');
       setTimeout(function () { prev.remove(); }, 450);
     }
   }
@@ -91,14 +92,13 @@
     return 0;
   }
 
-  // 하단 페이지 인디케이터를 현재 phase 기준으로 다시 그림
-  function updatePageIndicator(phase) {
-    if (!pageIndicator) return;
-    pageIndicator.innerHTML = '';
+  // 카드 하단 페이지 인디케이터(작은 원형 점)를 만들어 반환 (v0.2.8: 카드 안쪽)
+  //   현재 페이지: 진한 파랑 / 나머지: 연한 파랑. 클릭 시 해당 구간 첫 장면 이동.
+  function buildPageDots(phase) {
+    var wrap = div('page-dots-in');
     var navOn = CFG.options.stepNavigationEnabled;
     for (var i = 0; i < PHASES.length; i++) {
-      var isCurrent = (i === phase);
-      var cls = 'page-dot' + (isCurrent ? ' is-current' : '');
+      var cls = 'pdot' + (i === phase ? ' is-current' : '');
       var n;
       if (navOn) {
         n = document.createElement('button');
@@ -113,30 +113,51 @@
         n = div(cls);
       }
       n.title = PHASES[i];                // 툴팁으로 라벨 안내
-      // 현재 페이지만 라벨 텍스트를 함께 표시 (나머지는 점)
-      if (isCurrent) {
-        var lbl = div('page-dot-label');
-        lbl.textContent = PHASES[i];
-        n.appendChild(lbl);
-      }
-      pageIndicator.appendChild(n);
+      wrap.appendChild(n);
     }
+    return wrap;
   }
 
-  // el 에 카드(STEP 배지 + 제목 + 본문) 구성 — 진행 표시는 하단 인디케이터가 담당
-  //   opts.phase : 진행 표시 위치 (null 이면 인디케이터 숨김 — 게이트)
-  //   opts.step  : 카드 상단 STEP 배지 번호 (1~3, 없으면 배지 미표시)
+  // 장면별 상단 배지 라벨 계산 (v0.2.8)
+  //   실제 체험 단계 → STEP1~3 / MISSION 인트로 → MISSION / 성공 → MISSION 성공!
+  //   그 외(설명·최종 브랜드)는 배지 없음
+  function badgeLabel(opts) {
+    if (opts.step != null) return CFG.texts.step + opts.step;
+    if (opts.type === 'missionIntro') return PHASES[0];
+    if (opts.type === 'missionSuccess') return PHASES[4];
+    return null;
+  }
+
+  // el 에 카드뉴스형 카드(상단 처음으로+배지 헤더 + 제목 + 본문 + 하단 점) 구성
+  //   opts.phase : 진행 표시 위치 (null 이면 헤더·점 숨김 — 게이트)
+  //   opts.step  : 실제 체험 단계 번호 (1~3)
   //   titleMod   : 'warn' 등 제목 스타일 변형 (선택)
   function shell(el, opts, title, buildBody, titleMod) {
     opts = opts || {};
 
     var card = div('scene-card');
 
-    // 현재 장면의 STEP 배지 — 실제 체험 단계(STEP1~3)에만 표시
-    if (opts.step != null) {
-      var chip = div('step-chip');
-      chip.textContent = CFG.texts.step + opts.step;   // "STEP1" 표기
-      card.appendChild(chip);
+    // 카드 상단 헤더: 좌측 "처음으로" 미니 버튼(사용자용) + 중앙 STEP/MISSION 배지
+    // (게이트에는 헤더 없음 — opts.phase 가 있을 때만)
+    if (opts.phase != null) {
+      var header = div('card-header');
+
+      var homeMini = document.createElement('button');
+      homeMini.className = 'card-home';
+      var chIco = div('ch-ico'); chIco.textContent = '🏠';
+      var chLbl = div('ch-lbl'); chLbl.textContent = CFG.texts.homeButton;
+      homeMini.appendChild(chIco);
+      homeMini.appendChild(chLbl);
+      homeMini.addEventListener('click', function (e) { e.stopPropagation(); goHome(); });
+      header.appendChild(homeMini);
+
+      var badge = badgeLabel(opts);
+      if (badge) {
+        var bd = div('card-badge');
+        bd.textContent = badge;
+        header.appendChild(bd);
+      }
+      card.appendChild(header);
     }
 
     if (title) {
@@ -147,6 +168,10 @@
     var body = div('screen-body');
     buildBody(body);
     card.appendChild(body);
+
+    // 카드 하단 페이지 인디케이터 (게이트 제외)
+    if (opts.phase != null) card.appendChild(buildPageDots(opts.phase));
+
     el.appendChild(card);
   }
 
@@ -250,8 +275,8 @@
     clearScene();
     toggleChrome(true);
     var scene = SCENES[index];
-    updatePageIndicator(scene.phase);    // 하단 진행 표시 갱신
     updateCtrlButtons();                 // 다음 버튼 활성/비활성 갱신
+    // 진행 표시(페이지 점)는 카드 안쪽에서 shell 이 직접 그림 (v0.2.8)
     (RENDERERS[scene.type] || RENDERERS.message)(scene);
   }
 
@@ -845,7 +870,6 @@
     var d = show ? '' : 'none';
     if (controlPanel) controlPanel.style.display = d;
     if (bottomHint) bottomHint.style.display = d;
-    if (pageIndicator) pageIndicator.style.display = show ? '' : 'none';
   }
 
   /* ---------- 좌측 컨트롤 패널 (처음으로/플레이/정지/다음) ----------------- */
@@ -867,6 +891,7 @@
     playBtn = makeCtrlButton('▶', '플레이', playGame);
     pauseBtn = makeCtrlButton('⏸', '정지', pauseGame);
     nextBtn = makeCtrlButton('→', '다음', goNext);   // v0.2.7 — 다음 장면으로 즉시 이동
+    nextBtn.classList.add('is-next');                // v0.2.8 — 파란 화살표 강조
     controlPanel.appendChild(homeB);
     controlPanel.appendChild(playBtn);
     controlPanel.appendChild(pauseBtn);
@@ -874,13 +899,6 @@
     controlPanel.style.display = 'none';
     updateCtrlButtons();
     app.appendChild(controlPanel);
-  }
-
-  /* ---------- 하단 페이지 인디케이터 (진행 표시) --------------------- */
-  function buildPageIndicator() {
-    pageIndicator = div('page-indicator');
-    pageIndicator.style.display = 'none';
-    app.appendChild(pageIndicator);
   }
 
   /* ---------- 초기화 ------------------------------------------------- */
@@ -912,12 +930,10 @@
     brandLogo = C.createAsset({ src: CFG.assets.logo, label: CFG.placeholders.logo, shape: 'logo', className: 'brand-logo' });
     app.appendChild(brandLogo);
 
-    // 좌측 컨트롤 패널: 처음으로/플레이/정지/다음 (게임 중 표시)
+    // 좌측 컨트롤 패널: 처음으로/플레이/정지/다음 (운영자용 고정 컨트롤, 게임 중 표시)
     // (v0.2.1까지의 좌상단 "처음으로" 버튼을 이 패널로 통합)
+    // 사용자용 "처음으로"·페이지 점은 카드 안쪽(shell)에 별도 표시 (v0.2.8)
     buildControlPanel();
-
-    // 하단 페이지 인디케이터 (게임 중 표시)
-    buildPageIndicator();
 
     // 하단 안내 (게임 중)
     bottomHint = div('bottom-hint');
